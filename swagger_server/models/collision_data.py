@@ -152,5 +152,7 @@ class CollisionData(Model):
         :param sim_time: The sim_time of this CollisionData.
         :type sim_time: int
         """
+        if sim_time is None:
+            raise ValueError("Invalid value for `sim_time`, must not be `None`")  # noqa: E501
 
         self._sim_time = sim_time

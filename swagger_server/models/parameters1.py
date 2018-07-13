@@ -189,7 +189,7 @@ class Parameters1(Model):
         :param config: The config of this Parameters1.
         :type config: List[str]
         """
-        allowed_values = ["amcl-kinect", "amcl-lidar", "mprt-kinect", "mprt-lidar", "aruco-camera"]  # noqa: E501
+        allowed_values = ["amcl-kinect", "amcl-lidar", "mrpt-kinect", "mrpt-lidar", "aruco-camera"]  # noqa: E501
         if not set(config).issubset(set(allowed_values)):
             raise ValueError(
                 "Invalid values for `config` [{0}], must be a subset of [{1}]"  # noqa: E501

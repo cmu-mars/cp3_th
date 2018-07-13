@@ -15,21 +15,21 @@ class Parameters(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, message: str=None):  # noqa: E501
+    def __init__(self, error: str=None):  # noqa: E501
         """Parameters - a model defined in Swagger
 
-        :param message: The message of this Parameters.  # noqa: E501
-        :type message: str
+        :param error: The error of this Parameters.  # noqa: E501
+        :type error: str
         """
         self.swagger_types = {
-            'message': str
+            'error': str
         }
 
         self.attribute_map = {
-            'message': 'message'
+            'error': 'error'
         }
 
-        self._message = message
+        self._error = error
 
     @classmethod
     def from_dict(cls, dikt) -> 'Parameters':
@@ -43,24 +43,26 @@ class Parameters(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def message(self) -> str:
-        """Gets the message of this Parameters.
+    def error(self) -> str:
+        """Gets the error of this Parameters.
 
         human readable text describing the error, if possible. (TODO: add error codes here as we discover them)  # noqa: E501
 
-        :return: The message of this Parameters.
+        :return: The error of this Parameters.
         :rtype: str
         """
-        return self._message
+        return self._error
 
-    @message.setter
-    def message(self, message: str):
-        """Sets the message of this Parameters.
+    @error.setter
+    def error(self, error: str):
+        """Sets the error of this Parameters.
 
         human readable text describing the error, if possible. (TODO: add error codes here as we discover them)  # noqa: E501
 
-        :param message: The message of this Parameters.
-        :type message: str
+        :param error: The error of this Parameters.
+        :type error: str
         """
+        if error is None:
+            raise ValueError("Invalid value for `error`, must not be `None`")  # noqa: E501
 
-        self._message = message
+        self._error = error

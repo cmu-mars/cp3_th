@@ -3,7 +3,6 @@ swagger: "2.0"
 info:
   version: "0.1"
   title: "cmu mars brass th: phase 2, cp3"
-host: "brass-th"
 schemes:
 - "http"
 paths:
@@ -76,13 +75,114 @@ paths:
           description: "the TH has encountered an error in processing the done message\
             \ of the SUT and is shutting down the test"
       x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /start:
+    post:
+      operationId: "start_post"
+      parameters:
+      - in: "body"
+        name: "StartConfiguration"
+        required: true
+        schema:
+          $ref: "#/definitions/StartConfiguration"
+      responses:
+        200:
+          description: "experiment was started"
+          schema:
+            $ref: "#/definitions/inline_response_200_1"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /stop:
+    post:
+      operationId: "stop_post"
+      parameters: []
+      responses:
+        200:
+          description: "ok"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb/nodefail:
+    post:
+      description: "Causes the node to be killed"
+      operationId: "nodefail_post"
+      parameters:
+      - in: "body"
+        name: "Node"
+        required: true
+        schema:
+          $ref: "#/definitions/Element"
+      responses:
+        200:
+          description: "OK"
+        400:
+          description: "Failed"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb/sensorfail:
+    post:
+      description: "Causes the sensor to be killed"
+      operationId: "sensorfail_post"
+      parameters:
+      - in: "body"
+        name: "Sensor"
+        required: true
+        schema:
+          $ref: "#/definitions/Element"
+      responses:
+        200:
+          description: "OK"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /perturb/lightsoff:
+    post:
+      description: "Turn lights off in corridor"
+      operationId: "lightsoff_post"
+      parameters:
+      - in: "body"
+        name: "Corridor"
+        required: true
+        schema:
+          $ref: "#/definitions/Corridor"
+      responses:
+        200:
+          description: "ok"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+  /info:
+    get:
+      description: "Gets information about the running system"
+      operationId: "info_get"
+      parameters: []
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/inline_response_200_2"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
 definitions:
+  Element:
+    properties:
+      id:
+        type: "string"
+        enum:
+        - "amcl"
+        - "kinect"
+        - "mrpt"
+        - "lidar"
+        - "aruco"
+        - "camera"
+    example:
+      id: "amcl"
+  Corridor:
+    properties:
+      start:
+        type: "string"
+      end:
+        type: "string"
+    example:
+      start: "start"
+      end: "end"
   CollisionData:
     type: "object"
     required:
     - "robot-speed"
     - "robot-x"
     - "robot-y"
+    - "sim-time"
     properties:
       robot-x:
         type: "number"
@@ -138,13 +238,15 @@ definitions:
       target-loc: "target-loc"
   Parameters:
     type: "object"
+    required:
+    - "error"
     properties:
-      message:
+      error:
         type: "string"
         description: "human readable text describing the error, if possible. (TODO:\
           \ add error codes here as we discover them)"
     example:
-      message: "message"
+      error: "error"
   Parameters_1:
     type: "object"
     required:
@@ -196,8 +298,8 @@ definitions:
           enum:
           - "amcl-kinect"
           - "amcl-lidar"
-          - "mprt-kinect"
-          - "mprt-lidar"
+          - "mrpt-kinect"
+          - "mrpt-lidar"
           - "aruco-camera"
       sensors:
         type: "array"
@@ -255,3 +357,101 @@ definitions:
           \ [0,1]"
         minimum: 0
         maximum: 1
+  StartConfiguration:
+    type: "object"
+    required:
+    - "configuration"
+    - "start-loc"
+    - "target-loc"
+    - "utility"
+    properties:
+      start-loc:
+        type: "string"
+      target-loc:
+        type: "string"
+      configuration:
+        type: "string"
+        enum:
+        - "amcl-kinect"
+        - "amcl-lidar"
+        - "mrpt-kinect"
+        - "mrpt-lidar"
+        - "aruco-camera"
+      utility:
+        type: "string"
+        enum:
+        - "favor-timeliness"
+        - "favor-efficiency"
+        - "favor-safety"
+    example:
+      configuration: "amcl-kinect"
+      start-loc: "start-loc"
+      utility: "favor-timeliness"
+      target-loc: "target-loc"
+  inline_response_200_1:
+    required:
+    - "status"
+    properties:
+      status:
+        type: "string"
+        enum:
+        - "ok"
+        - "failed"
+      message:
+        type: "string"
+    example:
+      message: "message"
+      status: "ok"
+  inline_response_200_2:
+    required:
+    - "status"
+    properties:
+      status:
+        type: "string"
+        enum:
+        - "not-running"
+        - "live"
+        - "mission-running"
+        - "adapting"
+        - "adapted"
+      message:
+        type: "string"
+      robot-x:
+        type: "number"
+        format: "float"
+      robot-y:
+        type: "number"
+        format: "float"
+      robot-w:
+        type: "number"
+        format: "float"
+      robot-configuration:
+        type: "string"
+        enum:
+        - "amcl-kinect"
+        - "amcl-lidar"
+        - "mrpt-kinect"
+        - "mrpt-lidar"
+        - "aruco-camera"
+      robot-path:
+        type: "array"
+        items:
+          type: "string"
+      robot-speed:
+        type: "number"
+        format: "float"
+      robot-charge:
+        type: "number"
+        format: "float"
+    example:
+      robot-path:
+      - "robot-path"
+      - "robot-path"
+      robot-configuration: "amcl-kinect"
+      robot-charge: 5.63737699999999986033571985899470746517181396484375
+      message: "message"
+      robot-x: 0.8008281999999999900552438703016377985477447509765625
+      robot-w: 1.465812899999999974198772179079242050647735595703125
+      robot-speed: 5.96213399999999982270537657313980162143707275390625
+      status: "not-running"
+      robot-y: 6.02745629999999987802539180847816169261932373046875
