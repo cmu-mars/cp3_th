@@ -100,7 +100,7 @@ class InlineResponse2002(Model):
         :param status: The status of this InlineResponse2002.
         :type status: str
         """
-        allowed_values = ["not-running", "live", "mission-running", "adapting", "adapted", "finished"]  # noqa: E501
+        allowed_values = ["not-running", "live", "mission-running", "adapting", "adapted", "finished", "starting"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
                 "Invalid value for `status` ({0}), must be one of {1}"

@@ -4,7 +4,7 @@ import six
 import subprocess
 import os
 
-from swagger_server.models.corridor import Corridor  # noqa: E501
+from swagger_server.models.corridor import Corridor  as C # noqa: E501
 from swagger_server.models.element import Element  # noqa: E501
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
 from swagger_server.models.inline_response2001 import InlineResponse2001  # noqa: E501
@@ -18,6 +18,7 @@ from swagger_server import util
 from swagger_client import DefaultApi
 from swagger_client import Parameters2 as TA_Parameters2
 from swagger_client import Parameters as TA_Parameters
+from map_server import MapServer
 
 ready=None
 info=InlineResponse2002('not-running', 'Waiting for experiment to come up', -1, -1, 0, 'amcl-kinect', [], -1, -1)
@@ -102,7 +103,7 @@ def start_post(StartConfiguration):  # noqa: E501
     info.robot_configuration = sc.configuration
     # launch docker-compose -f ui-th.yml
     s = subprocess.Popen(["./launch.sh"])
-
+    info.status="starting"
     return 'Starting th'
 
 
@@ -130,10 +131,11 @@ def status_post(Parameters):  # noqa: E501
         info.robot_path = Parameters.plan
     elif info.status == 'mission-running':
         info.message = 'Mission is running'
+    elif info.status == "adapted":
+        info.robot_path = Parameters.plan
     else:
         info.message = Parameters.message
     node = "xxxx-xxxxx"
-    sensor = "xxxxx"
     if Parameters.config is not None and len(Parameters.config) > 0:
         node = Parameters.config[0]
     # if Parameters.sensors is not None and len(Parameters.sensors) > 0:
@@ -142,19 +144,29 @@ def status_post(Parameters):  # noqa: E501
     info.robot_configuration = node
     return 'do some magic!'
 
+map_server = None
+
 def lightsoff_post(Corridor):  # noqa: E501
     """lightsoff_post
 
     Turn lights off in corridor # noqa: E501
 
-    :param Corridor: 
+    :param c: 
     :type Corridor: dict | bytes
 
     :rtype: None
     """
     if connexion.request.is_json:
-        Corridor = Corridor.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+        c = C.from_dict(connexion.request.get_json())  # noqa: E501
+    global map_server
+
+    if map_server is None:
+        map_server=MapServer('client/cp3.json')
+    lights = map_server.lights_between_waypoints(c.start, c.end)
+    print("Turning off lights between %s and %s: %s" %(c.start, c.end, str(lights)))
+    for l in lights:
+        ta.perturb_light_post(TA_Parameters(l,False))
+    return 'ok'
 
 
 def nodefail_post(Node):  # noqa: E501
@@ -188,7 +200,7 @@ def sensorfail_post(Sensor):  # noqa: E501
     if connexion.request.is_json:
         Sensor = Element.from_dict(connexion.request.get_json())  # noqa: E501
     print("====> Killing sensor %s" %Sensor.id)
-    rest = ta.perturb_nodefail_post(TA_Parameters(Sensor.id, False))
+    rest = ta.perturb_sensor_post(TA_Parameters(Sensor.id, False))
     return 'ok'
 
 def stop_post():  # noqa: E501
@@ -199,6 +211,9 @@ def stop_post():  # noqa: E501
 
     :rtype: None
     """
+    global ta,info
+    ta = None
+    info = InlineResponse2002('not-running', 'Waiting for experiment to come up', -1, -1, 0, 'amcl-kinect', [], -1, -1)
     s = subprocess.Popen(["./stop.sh"])
 
     return 'System stopped'
