@@ -1,0 +1,584 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "0.1",
+        "title": "cmu mars brass th: phase 2, cp3"
+    },
+    "schemes": [
+        "http"
+    ],
+    "paths": {
+        
+        "/ready": {
+            "post": {
+                "description": "indicates that the SUT is ready to recieve configuration data to continue start up",
+                "operationId": "ready_post",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "TH is ready to produce configuration data",
+                        "schema": {
+                            "$ref": "#/definitions/inline_response_200"
+                        }
+                    },
+                    "400": {
+                        "description": "TH encountered an error producing configuration data"
+                    }
+                },
+                "x-swagger-router-controller": "swagger_server.controllers.default_controller"
+            }
+        },
+        "/error": {
+            "post": {
+                "description": "indicates that the SUT has encountered an error in configuration data, parameters, system start, or any other less specified problem",
+                "operationId": "error_post",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Parameters",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Parameters"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "the TH acknowledges that the SUT has encountered an error and will shut down the test"
+                    },
+                    "400": {
+                        "description": "the TH has encountered an error in processing the error from the SUT and will also shut down the test"
+                    }
+                },
+                "x-swagger-router-controller": "swagger_server.controllers.default_controller"
+            }
+        },
+        "/status": {
+            "post": {
+                "description": "indicate important state changes in the SUT to the TH. posted periodically as the described events occur.",
+                "operationId": "status_post",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Parameters",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Parameters_1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "the TH acknowledges the status of the SUT"
+                    },
+                    "400": {
+                        "description": "the TH has encountered an error in processing the status of the SUT"
+                    }
+                },
+                "x-swagger-router-controller": "swagger_server.controllers.default_controller"
+            }
+        },
+        "/done": {
+            "post": {
+                "description": "indicates that the test is completed",
+                "operationId": "done_post",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Parameters",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Parameters_2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "the TH acknowledges the done message from the SUT and is shutting down the test"
+                    },
+                    "400": {
+                        "description": "the TH has encountered an error in processing the done message of the SUT and is shutting down the test"
+                    }
+                },
+                "x-swagger-router-controller": "swagger_server.controllers.default_controller"
+            }
+        },
+        "/start": {
+            "post": {
+                "operationId": "start_post",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "StartConfiguration",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/StartConfiguration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "experiment was started",
+                        "schema": {
+                            "$ref": "#/definitions/inline_response_200_1"
+                        }
+                    }
+                },
+                "x-swagger-router-controller": "swagger_server.controllers.default_controller"
+            }
+        },
+        "/stop" : {
+          "post" : {
+            "operationId" : "stop_post",
+            "parameters" : [],
+            "responses" : {
+              "200" : {
+                "description" : "ok"
+              }
+            }
+          }
+        },
+        "/perturb/nodefail" : {
+          "post": {
+            "description": "Causes the node to be killed",
+            "operationId": "nodefail_post",
+            "parameters": [
+              {
+                "in": "body",
+                "name" : "Node",
+                "required": true,
+                "schema": {
+                  "$ref" : "#/definitions/Element"
+                }
+              }],
+            "responses" : {
+              "200": {
+                "description" : "OK"
+              },
+              "400" : {
+                "description" : "Failed"
+              }
+            }
+          }
+        },
+        "/perturb/sensorfail" : {
+          "post" : {
+            "description" : "Causes the sensor to be killed",
+            "operationId" : "sensorfail_post",
+            "parameters" : [
+              {
+                "in" : "body",
+                "name" : "Sensor",
+                "required" : true,
+                "schema" : {
+                  "$ref" : "#/definitions/Element"
+                }
+              }],
+            "responses" : {
+              "200" : {
+                "description" : "OK"
+              }
+            }
+          }
+        },
+        "/perturb/lightsoff" : {
+          "post" : {
+            "description" : "Turn lights off in corridor",
+            "operationId" : "lightsoff_post",
+            "parameters" : [
+              {
+                "in" : "body",
+                "name" : "Corridor",
+                "required" : true,
+                "schema" : {
+                  "$ref" : "#/definitions/Corridor"
+                }
+              }],
+            "responses" : {
+              "200" : {
+                "description" : "ok"
+              }
+            }
+          }
+        },
+        "/info": {
+            "get": {
+                "description": "Gets information about the running system",
+                "operationId": "info_get",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/inline_response_200_2"
+                        }
+                    }
+                },
+                "x-swagger-router-controller": "swagger_server.controllers.default_controller"
+            }
+        }
+    },
+    "definitions": {
+      "Element" : {
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "enum" : ["amcl", "kinect", "mrpt", "lidar", "aruco", "camera"]
+          }
+        }
+      },
+      "Corridor" : {
+        "properties" : {
+          "start" : {
+            "type" : "string",
+          },
+          "end" : {
+            "type" : "string"
+          }
+        }
+      },
+        "CollisionData": {
+            "type": "object",
+            "required": [
+                "robot-speed",
+                "robot-x",
+                "robot-y",
+                "sim-time"
+            ],
+            "properties": {
+                "robot-x": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "The x location of the robot center when collision occured"
+                },
+                "robot-y": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "The y lcoation of the robot center when collision occured"
+                },
+                "robot-speed": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "The speed of the robot (m/s) at the time the collision occured"
+                },
+                "sim-time": {
+                    "type": "integer",
+                    "description": "The (simulation) time at which the collision occurred (seconds from start of simulator)"
+                }
+            }
+        },
+        "inline_response_200": {
+            "properties": {
+                "start-loc": {
+                    "type": "string",
+                    "description": "the name of the start map waypoint. must be a valid way point name from the map data. must not be equal to `target-loc`."
+                },
+                "target-loc": {
+                    "type": "string",
+                    "description": "the name of the goal map waypoint. must be a valid way point name from the map data. must not be equal to `start-loc`."
+                },
+                "use-adaptation": {
+                    "type": "boolean",
+                    "description": "if `true`, then the DAS will use adapative behaiviours; if `false` then the DAS will not use adaptive behaiviours"
+                },
+                "start-configuration": {
+                    "type": "string",
+                    "description": "the label of the starting configuration for the robot",
+                    "enum": [
+                        "amcl-kinect",
+                        "amcl-lidar",
+                        "mprt-kinect",
+                        "mprt-lidar",
+                        "aruco-camera"
+                    ]
+                },
+                "utility-function": {
+                    "type": "string",
+                    "description": "the utility function to use for evaluating mission quality",
+                    "enum": [
+                        "favor-timeliness",
+                        "favor-safety",
+                        "favor-efficiency"
+                    ]
+                }
+            },
+            "example": {
+                "use-adaptation": true,
+                "start-loc": "start-loc",
+                "start-configuration": "amcl-kinect",
+                "utility-function": "favor-timeliness",
+                "target-loc": "target-loc"
+            }
+        },
+        "Parameters": {
+            "type": "object",
+            "required": [
+                "error"
+            ],
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "description": "human readable text describing the error, if possible. (TODO: add error codes here as we discover them)"
+                }
+            },
+            "example": {
+                "error": "error"
+            }
+        },
+        "Parameters_1": {
+            "type": "object",
+            "required": [
+                "sim-time",
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "description": "one of a enumerated set of statuses to report, arise, as follows:\n  * `live`, the SUT has processed the configuration data\n     and is ready for initial perturbations (if any) and the\n     start of the test\n  * `mission-running`, the SUT has processed the initial\n     perturbations after receiving `/start`, possibly\n     adapted, and the robot is now actually moving along\n     its path. it is an error to send any perturbation to\n     the SUT between sending a message to `/start` and\n     receiving this status.\n  * `adapting`, the SUT has detected a condition that\n     requires adaptation and the SUT is adapting. it is\n     an error to send any perturbation to the SUT after\n     this message is sent to the TH until the TH gets a\n     status message with `adapted`.\n  * `adapted`, the SUT has finished adapting after\n     observing a need to. this means that the robot is\n     moving along its plan again and it is no longer an\n     error to send perturbations. if this is the status\n     code of the message, the fields `plan`, `config` and\n     `sensors` will also be present, to describe the new\n     state of the robot.",
+                    "enum": [
+                        "live",
+                        "mission-running",
+                        "adapting",
+                        "adapted"
+                    ]
+                },
+                "message": {
+                    "type": "string",
+                    "description": "human readable text describing the status, if any"
+                },
+                "sim-time": {
+                    "type": "integer",
+                    "description": "the simulation time the status message was produced",
+                    "minimum": 0
+                },
+                "plan": {
+                    "type": "array",
+                    "description": "list of waypoints the current plan tends to visit, in order. This will not be sent with `status == live`.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "config": {
+                    "type": "array",
+                    "description": "list of currently active nodes. This will not be sent with `status == live`.",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "amcl-kinect",
+                            "amcl-lidar",
+                            "mrpt-kinect",
+                            "mrpt-lidar",
+                            "aruco-camera"
+                        ]
+                    }
+                },
+                "sensors": {
+                    "type": "array",
+                    "description": "list of currently active sensors, in order. This will not be sent with `status == live`.",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "kinect",
+                            "lidar",
+                            "camera",
+                            "headlamp"
+                        ]
+                    }
+                }
+            }
+        },
+        "Parameters_2": {
+            "type": "object",
+            "required": [
+                "collisions",
+                "final-charge",
+                "final-sim-time",
+                "final-utility",
+                "final-x",
+                "final-y",
+                "num-adaptations"
+            ],
+            "properties": {
+                "final-x": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "the x coordinate of the robot position when the test ended"
+                },
+                "final-y": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "the y coordinate of the robot position when the test ended"
+                },
+                "final-sim-time": {
+                    "type": "integer",
+                    "description": "the simulation time when the mission finished",
+                    "minimum": 0
+                },
+                "final-charge": {
+                    "type": "integer",
+                    "description": "the charge left in the battery when the test ended",
+                    "minimum": 0
+                },
+                "collisions": {
+                    "type": "array",
+                    "description": "A (possibly empty) list of locations, times, and speeds of any collisions of the robot",
+                    "items": {
+                        "$ref": "#/definitions/CollisionData"
+                    }
+                },
+                "num-adaptations": {
+                    "type": "integer",
+                    "description": "the number of times that the robot adapted (0 if there is no DAS)",
+                    "minimum": 0
+                },
+                "final-utility": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "the utility achieved at the end of the mission, in the range [0,1]",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            }
+        },
+        "StartConfiguration": {
+            "type": "object",
+            "required": [
+                "configuration",
+                "start-loc",
+                "target-loc",
+                "utility"
+            ],
+            "properties": {
+                "start-loc": {
+                    "type": "string"
+                },
+                "target-loc": {
+                    "type": "string"
+                },
+                "configuration": {
+                    "type": "string",
+                    "enum": [
+                        "amcl-kinect",
+                        "amcl-lidar",
+                        "mrpt-kinect",
+                        "mrpt-lidar",
+                        "aruco-camera"
+                    ]
+                },
+                "utility": {
+                    "type": "string",
+                    "enum": [
+                        "favor-timeliness",
+                        "favor-efficiency",
+                        "favor-safety"
+                    ]
+                }
+            },
+            "example": {
+                "configuration": "amcl-kinect",
+                "start-loc": "start-loc",
+                "utility": "favor-timeliness",
+                "target-loc": "target-loc"
+            }
+        },
+        "inline_response_200_1": {
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "ok",
+                        "failed"
+                    ]
+                },
+                "message": {
+                    "type": "string"
+                }
+            },
+            "example": {
+                "message": "message",
+                "status": "ok"
+            }
+        },
+        "inline_response_200_2": {
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "not-running",
+                        "live",
+                        "mission-running",
+                        "adapting",
+                        "adapted",
+                        "finished"
+                    ]
+                },
+                "message": {
+                    "type": "string"
+                },
+                "robot-x": {
+                    "type": "number",
+                    "format": "float"
+                },
+                "robot-y": {
+                    "type": "number",
+                    "format": "float"
+                },
+                "robot-w": {
+                    "type": "number",
+                    "format": "float"
+                },
+                "robot-configuration": {
+                    "type": "string",
+                    "enum": [
+                        "amcl-kinect",
+                        "amcl-lidar",
+                        "mrpt-kinect",
+                        "mrpt-lidar",
+                        "aruco-camera",
+                        "amcl",
+                        "mrpt",
+                        "aruco",
+                        "camera",
+                        "kinect",
+                        "lidar",
+                        "unknown"
+                    ]
+                },
+                "robot-path": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "robot-speed": {
+                    "type": "number",
+                    "format": "float"
+                },
+                "robot-charge": {
+                    "type": "number",
+                    "format": "float"
+                }
+            },
+            "example": {
+                "robot-path": [
+                    "robot-path",
+                    "robot-path"
+                ],
+                "robot-configuration": "amcl-kinect",
+                "robot-charge": 5.637377,
+                "message": "message",
+                "robot-x": 0.8008282,
+                "robot-w": 1.4658129,
+                "robot-speed": 5.962134,
+                "status": "not-running",
+                "robot-y": 6.0274563
+            }
+        }
+    }
+}
